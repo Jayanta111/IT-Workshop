@@ -41,6 +41,21 @@ if ($result->num_rows > 0) {
      echo "No user found with this ID.";
      exit;  // Stop further execution if no user is found
  }
+// Fetch borrowed books for the logged-in user
+$sql = "SELECT Book_ID ,Title,  Borrow_Date, Return_Date ,Author,Publisher
+FROM borrow_records 
+WHERE User_ID = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param('i', $Id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$borrowedBooks = [];
+if ($result->num_rows > 0) {
+while ($row = $result->fetch_assoc()) {
+$borrowedBooks[] = $row;
+}
+}
 
  // Close the statement and connection
  $stmt->close();
@@ -57,6 +72,65 @@ if ($result->num_rows > 0) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <title>E-Library-</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 50%;
+            margin: 100px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+        }
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0, 0, 0, 0.5); 
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 15% auto; 
+            padding: 20px;
+            border-radius: 8px;
+            width: 50%; 
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .modal-content h2 {
+            margin: 0 0 20px;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .modal-buttons button {
+            cursor: pointer;
+        }
+        .bg-sky-700 {
+            background-color: #1d4ed8;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .bg-sky-700:hover {
+            background-color: #2563eb;
+        }
+    </style>
 </head>
 <body>        
   <!--------------------Header ---------------------->
@@ -92,11 +166,63 @@ if ($result->num_rows > 0) {
     <p class="text-gray-500 dark:text-gray-400">Roll No: <span class="font-bold"><?= htmlspecialchars($user['Roll_no']) ?></span></p>
     <p class="text-gray-500 dark:text-gray-400">Registration No: <span class="font-bold"><?= htmlspecialchars($user['Registration_number']) ?></span></p>
     <p class="text-gray-500 dark:text-gray-400">Student Id: <span class="font-bold"><?= htmlspecialchars($user['Id']) ?></span></p>
+       <div class="flex justify-center mt-8">
+    <button id="borrowedBooksBtn" class="bg-blue-600 text-white px-2 py-3 rounded hover:bg-blue-700">
+        View Borrowed Books
+    </button>
+</div> </span></p>
 
     <button id="logoutButton" class="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
     <a href="http://localhost/IT%20Workshop/Front-End/login.php">Log Out</a></button>
   </div>
 </div>
+<!-- Modal for Borrowed Books -->
+<div id="borrowedBooksModal" tabindex="-1" aria-hidden="true" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-50">
+    <div class="relative p-6 bg-white rounded-lg shadow dark:bg-gray-800 max-w-4xl w-full sm:w-11/12 md:w-9/12 lg:w-8/12">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Borrowed Books</h3>
+            <button id="closeBorrowedBooks" class="text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 011.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="overflow-x-auto max-h-96 sm:max-h-[60vh] lg:max-h-[80vh]">
+            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <tr>
+                        <th class="px-4 py-3">Book ID</th>
+                        <th class="px-4 py-3">Title</th>
+                        <th class="px-4 py-3">Author</th>
+                        <th class="px-4 py-3">Publisher</th>
+                        <th class="px-4 py-3">Borrow Date</th>
+                        <th class="px-4 py-3">Return Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($borrowedBooks)): ?>
+                        <?php foreach ($borrowedBooks as $book): ?>
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                <td class="px-4 py-3"><?= htmlspecialchars($book['Book_ID']) ?></td>
+                                <td class="px-4 py-3"><?= htmlspecialchars($book['Title']) ?></td>
+                                <td class="px-4 py-3"><?= htmlspecialchars($book['Author']) ?></td>
+                                <td class="px-4 py-3"><?= htmlspecialchars($book['Publisher']) ?></td>
+                                <td class="px-4 py-3"><?= htmlspecialchars($book['Borrow_Date']) ?></td>
+                                <td class="px-4 py-3"><?= htmlspecialchars($book['Return_Date']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="6" class="px-4 py-3 text-center text-gray-500">No borrowed books found.</td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Borrowed Books -->
 
 <!------------------------User Profile--------------------->
 
@@ -230,12 +356,26 @@ if ($result->num_rows > 0) {
                 </p>
 
                 <div class="mt-4 flex items-center justify-between gap-4">
-                <form action="book/borrow.php" method="POST">
+                <form id="borrowForm" action="book/borrow.php" method="POST" onsubmit="return false;">
     <input type="hidden" name="Book_ID" value="<?= $book['Book_ID'] ?>">
     <input type="hidden" name="Name" value="<?= $signup['Name'] ?>">
-    <button type="submit" onclick ="window.location" class="bg-sky-700 inline-flex items-center rounded-lg px-5 py-2.5">
-        Borrow
-    </button>
+    <button 
+    type="button" 
+    onclick="openModal()" 
+    class="bg-sky-700 inline-flex items-center rounded-lg px-5 py-2.5">
+    Borrow
+</button>
+<!-- Modal -->
+<div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h2>Confirm Borrow</h2>
+            <p>Are you sure you want to borrow this book?</p>
+            <div class="modal-buttons">
+                <button class="bg-sky-700" onclick="submitForm()">Yes</button>
+                <button class="bg-gray-500" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
 </form>
 
                 </div>
@@ -269,7 +409,7 @@ if ($result->num_rows > 0) {
             <li><a href="#" class="mr-4 hover:underline md:mr-6">Blog</a></li>
             <li><a href="#" class="mr-4 hover:underline md:mr-6">Contact</a></li>
         </ul>
-        <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2021-2022 <a href="#" class="hover:underline">Flowbite™</a>. All Rights Reserved.</span>
+        <span class="text-sm text-gray-500 sm:text-center dark:text-gray-400">© 2021-2022 <a href="#" class="hover:underline">E-Library</a>. All Rights Reserved.</span>
     </div>
 </footer>
 <script>
@@ -347,7 +487,49 @@ userProfileModal.addEventListener('click', (event) => {
 
 </script>
  <!--------------------User Profile ---------------------->
+ 
 
+    <script>
+        // Open the modal FOR CONFIRAMTION OF BORRWER
+        function openModal() {
+            document.getElementById("confirmModal").style.display = "block";
+        }
 
+        // Close the modal
+        function closeModal() {
+            document.getElementById("confirmModal").style.display = "none";
+        }
+
+        // Submit the form and close the modal
+        function submitForm() {
+            document.getElementById("borrowForm").submit();
+        }
+    </script>
+<!-- JavaScript to Handle Modal -->
+<script>
+    const borrowedBooksBtn = document.getElementById('borrowedBooksBtn');
+    const borrowedBooksModal = document.getElementById('borrowedBooksModal');
+    const closeBorrowedBooks = document.getElementById('closeBorrowedBooks');
+
+    // Open the modal
+    borrowedBooksBtn.addEventListener('click', () => {
+        borrowedBooksModal.classList.remove('hidden');
+        borrowedBooksModal.classList.add('flex');
+    });
+
+    // Close the modal
+    closeBorrowedBooks.addEventListener('click', () => {
+        borrowedBooksModal.classList.add('hidden');
+        borrowedBooksModal.classList.remove('flex');
+    });
+
+    // Optional: Close modal when clicking outside the content
+    borrowedBooksModal.addEventListener('click', (event) => {
+        if (event.target === borrowedBooksModal) {
+            borrowedBooksModal.classList.add('hidden');
+            borrowedBooksModal.classList.remove('flex');
+        }
+    });
+</script>
 </body>
 </html>

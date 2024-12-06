@@ -158,7 +158,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             <label for="Return_Date">Return Date (set to 6 months from now):</label>
             <input type="date" id="Return_Date" name="Return_Date" value="<?php echo $Return_Date; ?>" readonly>
-            <button type="submit">Borrow</button>
+             <h1>Borrow Successfully</h1>
         </form>
     </div>
 </body>

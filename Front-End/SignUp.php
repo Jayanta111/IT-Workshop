@@ -5,7 +5,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="css/bootstrap.min.css" rel="stylesheet">
     <title>Sign Up</title>
 </head>
 <body>
@@ -41,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 VALUES ('$name', '$roll_no', '$reg_no', '$id_card')";
 
         if ($conn->query($sql) === TRUE) {
-            header("Location:http://localhost/IT%20Workshop/Front-End/main/index.php");
+            header("Location:http://localhost/IT%20Workshop/Front-End/login.php");
             exit();
         } else {
             echo "Error: " . $sql . "<br>" . $conn->error;
@@ -49,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         echo "Error uploading file.";
     }
-
+    
     $conn->close();
 }
 ?>
@@ -57,7 +56,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <section class="bg-gray-50 dark:bg-gray-900">
   <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
       <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
-          <img class="w-8 h-8 mr-2" src="" alt="logo">
           E-Library    
       </a>
       <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">

@@ -58,6 +58,89 @@
         </ul>
     </div>
 </header>
+<section class=" p-3 sm:p-5">
+<div class="mx-auto max-w-screen-xl px-4 lg:px-12">
+<div class="overflow-x-auto">
+    <table class="w-full text-sm text-left text-white-500 dark:text-gray-900">
+        <?php
+        // Database configuration
+        $servername = "localhost";
+        $username = "root";
+        $password = "";
+        $dbname = "e-library";
+
+        // Create connection
+        $conn = new mysqli($servername, $username, $password, $dbname);
+
+        // Check connection
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        }
+
+        // SQL query to select all books
+        $sql = "SELECT Id , Name, Roll_no, Registration_number, Id_Card FROM signup";
+
+        $result = $conn->query($sql);
+        if ($result->num_rows > 0) {
+            echo '<thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">';
+            echo '<tr>';
+            echo '<th scope="col" class="px-4 py-3">Student Id</th>';
+            echo '<th scope="col" class="px-4 py-3">Name</th>';
+            echo '<th scope="col" class="px-4 py-3">Roll No</th>';
+            echo '<th scope="col" class="px-4 py-3">Registration Number</th>';
+            echo '<th scope="col" class="px-4 py-3">Id Card</th>';
+            echo '<th scope="col" class="px-4 py-3"><span class="sr-only">Actions</span></th>';
+            echo '</tr></thead><tbody>';
+
+            // Output data of each row
+            while ($row = $result->fetch_assoc()) {
+                echo '<tr class="border-b dark:border-gray-700">';
+                echo '<td class="px-4 py-3">' . $row['Id'] . '</td>';
+                echo '<td class="px-4 py-3">' . $row['Name'] . '</td>';
+                echo '<td class="px-4 py-3">' . $row['Roll_no'] . '</td>';
+                echo '<td class="px-4 py-3">' . $row['Registration_number'] . '</td>';
+
+                        echo '<td class="px-4 py-3">';
+                if (!empty($row['Id_Card'])) {
+                    echo '<img src="http://localhost/IT%20Workshop/Back-End/Admin/Idcard/' . $row['Id_Card'] . '" alt="Cover" width="100">';
+                } else {
+                    echo 'No Id Card Image';
+                }
+                echo '</td>';
+                echo '<td class="px-4 py-3 flex items-center justify-end">
+                        <button id="dropdown-button" data-dropdown-toggle="dropdown" class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100" type="button">
+                            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+                            </svg>
+                        </button>
+                        <div id="dropdown" class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
+                            <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdown-button">
+                                <li>
+                                    <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Show</a>
+                                </li>
+                                <li>
+                                    <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</a>
+                                </li>
+                            </ul>
+                            <div class="py-1">
+                                <a href="#" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete</a>
+                            </div>
+                        </div>
+                    </td>';
+                echo '</tr>';
+            }
+            echo '</tbody></table>';
+        } else {
+            echo '<p class="text-center text-gray-500">No books found in the library.</p>';
+        }
+
+        // Close the connection
+        $conn->close();
+        ?>
+    </table>
+</div>
+</div>
+</div>
 <!--------------------Script for Header---->
 <script>
     function toggleMobileMenu() {
